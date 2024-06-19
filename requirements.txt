@@ -3,3 +3,6 @@ numpy
 pandas
 beautifulsoup4
 matplotlib
+konlpy
+wordcloud
+nltk
