@@ -1,8 +1,6 @@
 streamlit
-numpy
-pandas
-beautifulsoup4
+bs4
 matplotlib
-konlpy
-wordcloud
 nltk
+wordcloud
+soynlp
