@@ -1,6 +1,6 @@
-streamlit
-bs4
-matplotlib
-nltk
-wordcloud
-soynlp
+streamlit>=1.0.0
+requests>=2.25.1
+beautifulsoup4>=4.9.3
+soynlp>=0.0.493
+wordcloud>=1.8.1
+matplotlib>=3.3.4
