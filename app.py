@@ -15,14 +15,21 @@ def fetch_news_titles(keyword, pages=3):
     return titles
 
 def extract_nouns_from_titles(titles):
+    if not titles:
+        return []  # 빈 타이틀 리스트가 주어지면 빈 명사 리스트를 반환
+
     noun_extractor = LRNounExtractor_v2()
-    nouns = noun_extractor.train_extract(titles)
-    return [noun for noun, score in nouns.items() if score.score > 0.1]  # 점수 기준을 낮춤
+    try:
+        nouns = noun_extractor.train_extract(titles)
+        return [noun for noun, score in nouns.items() if score.score > 0.1]  # 점수 기준을 낮춤
+    except Exception as e:
+        print(f"명사 추출 중 오류 발생: {e}")
+        return []  # 오류 발생 시 빈 리스트 반환
 
 def generate_wordcloud(nouns):
     if not nouns:
         st.write("추출된 명사가 없습니다. 워드 클라우드를 생성할 수 없습니다.")
-        return
+        return None
     text = ' '.join(nouns)
     wordcloud = WordCloud(font_path='/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf', width=800, height=800, background_color='white').generate(text)
     plt.figure(figsize=(8, 8))
@@ -41,6 +48,9 @@ def main():
             titles = fetch_news_titles(keyword, pages)
         with st.spinner("명사를 추출하는 중..."):
             nouns = extract_nouns_from_titles(titles)
+            if not nouns:
+                st.error("추출된 명사가 없습니다. 다른 키워드를 시도해 보세요.")
+                return
         with st.spinner("워드 클라우드를 생성하는 중..."):
             fig = generate_wordcloud(nouns)
             if fig:
