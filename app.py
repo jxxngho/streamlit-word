@@ -14,7 +14,7 @@ def get_weather_info():
     chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 
     # ChromeDriver 경로 설정 (필요에 따라 수정)
-    chromedriver_path = '../chromedriver-win64/chromedriver.exe'
+    chromedriver_path = "./chromedriver-win64/chromedriver.exe"
     service = Service(chromedriver_path)
     
     driver = webdriver.Chrome(service=service, options=chrome_options)
