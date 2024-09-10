@@ -4,3 +4,4 @@ beautifulsoup4>=4.9.3
 soynlp>=0.0.493
 wordcloud>=1.8.1
 matplotlib>=3.3.4
+selenium
