@@ -1,60 +1,43 @@
 import streamlit as st
-import requests
-from bs4 import BeautifulSoup
-from soynlp.noun import LRNounExtractor_v2
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+import os
 
-def fetch_news_titles(keyword, pages=3):
-    titles = []
-    for page in range(1, pages + 1):
-        url = f"https://search.naver.com/search.naver?where=news&query={keyword}&start={page*10-9}"
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        titles.extend([title.get_text() for title in soup.select('.news_tit')])
-    return titles
+def get_weather_info():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # 브라우저 창을 표시하지 않음
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 
-def extract_nouns_from_titles(titles):
-    if not titles:
-        return []  # 빈 타이틀 리스트가 주어지면 빈 명사 리스트를 반환
-
-    noun_extractor = LRNounExtractor_v2()
-    try:
-        nouns = noun_extractor.train_extract(titles)
-        return [noun for noun, score in nouns.items() if score.score > 0.1]  # 점수 기준을 낮춤
-    except Exception as e:
-        print(f"명사 추출 중 오류 발생: {e}")
-        return []  # 오류 발생 시 빈 리스트 반환
-
-def generate_wordcloud(nouns):
-    if not nouns:
-        st.write("추출된 명사가 없습니다. 워드 클라우드를 생성할 수 없습니다.")
-        return None
-    text = ' '.join(nouns)
-    wordcloud = WordCloud(font_path='/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf', width=800, height=800, background_color='white').generate(text)
-    plt.figure(figsize=(8, 8))
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis('off')
-    plt.close()
-    return plt
-
-def main():
-    st.title("네이버 뉴스 키워드 워드 클라우드 생성기")
-    keyword = st.text_input("검색할 키워드를 입력하세요:", "오뚜기")
-    pages = st.number_input("검색할 페이지 수를 입력하세요:", min_value=1, max_value=10, value=3)
+    # ChromeDriver 경로 설정 (필요에 따라 수정)
+    chromedriver_path = "C:/Users/OTTOGI/Desktop/IT/web_test1/크롤링/otoki/driver/chromedriver-win64/chromedriver-win64/chromedriver.exe"
+    service = Service(chromedriver_path)
     
-    if st.button("워드 클라우드 생성"):
-        with st.spinner("뉴스 제목을 가져오는 중..."):
-            titles = fetch_news_titles(keyword, pages)
-        with st.spinner("명사를 추출하는 중..."):
-            nouns = extract_nouns_from_titles(titles)
-            if not nouns:
-                st.error("추출된 명사가 없습니다. 다른 키워드를 시도해 보세요.")
-                return
-        with st.spinner("워드 클라우드를 생성하는 중..."):
-            fig = generate_wordcloud(nouns)
-            if fig:
-                st.pyplot(fig)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    
+    try:
+        # Google의 날씨 정보 페이지로 이동
+        driver.get("https://www.google.com/search?q=weather")
+        
+        # CSS 선택자를 이용해서 원하는 클래스를 가져온다.
+        element = driver.find_element(By.ID, "wob_tm").text
+        loc = driver.find_element(By.CSS_SELECTOR, 'span.BBwThe').text
+        
+        return loc, element
+    except Exception as e:
+        return None, str(e)
+    finally:
+        driver.quit()
 
-if __name__ == "__main__":
-    main()
+st.title("Weather Information")
+
+if st.button("Get Weather Info"):
+    loc, temperature = get_weather_info()
+    if loc and temperature:
+        st.write(f'현재 {loc}의 온도는 {temperature}도!')
+    else:
+        st.write(f'Error: {temperature}')
